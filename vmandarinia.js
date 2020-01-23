@@ -5,6 +5,7 @@ var vmandarinia = express();
 
 const AssistantV2 = require('ibm-watson/assistant/v2');
 const { IamAuthenticator } = require('ibm-watson/auth');
+var IDSession="";
 
 const assistant = new AssistantV2({
 
@@ -15,28 +16,30 @@ const assistant = new AssistantV2({
   url: process.env["ASSISTANT_URL"],
 });
 
-//  authenticator: new IamAuthenticator({
-//    apikey: process.env["ASSISTANT_APIKEY"],
-//    url: process.env["ASSISTANT_URL"],
-//    version: '2019-02-28'
-//  })
-//});
-
-vmandarinia.get('/', function (req, res){
-  http.res("ciao!")
-  assistant.message(
-  {
-    input: { text: "What's the weather?" },
-    assistantId: '<assistant id>',
-    sessionId: '<session id>',
-  })
-  .then(response => {
-    console.log(JSON.stringify(response.result, null, 2));
+assistant.createSession({
+  assistantId: process.env["ASSISTANT_ID"]
+})
+  .then(res => {
+   // IDSession= JSON.stringify(res, null, 2);
+    console .log("**********************************");
+    console.log(JSON.stringify(res, null, 2));
+    console .log("**********************************");
+    IDSession=JSON.stringify(res.result.session_id, null, 2);
+    assistant.message({
+      assistantId: process.env["ASSISTANT_ID"],
+      sessionId: (IDSession.split('"'))[1],
+      input: {
+        'message_type': 'text',
+        'text': 'Ciao'
+        }
+      })
+      .then(res => {
+        console.log(JSON.stringify(res, null, 2));
+      })
+      .catch(err => {
+        console.log(err);
+      });
   })
   .catch(err => {
     console.log(err);
   });
-});
-
-vmandarinia.listen(3000)
-console.log(process.env["ASSISTANT_APIKEY"])
